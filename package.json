@@ -1,0 +1,23 @@
+{
+  "name": "syt5_gk961_cloud_datenmanagement",
+  "version": "0.0.1",
+  "description": "Simple registration and login system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TGM-HIT/syt5-gk961-cloud-datenmanagement-pprzidal.git"
+  },
+  "author": "pprzidal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TGM-HIT/syt5-gk961-cloud-datenmanagement-pprzidal/issues"
+  },
+  "homepage": "https://github.com/TGM-HIT/syt5-gk961-cloud-datenmanagement-pprzidal#readme",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "express": "^4.17.1"
+  }
+}
