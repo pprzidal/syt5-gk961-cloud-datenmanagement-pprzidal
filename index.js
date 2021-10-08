@@ -9,7 +9,7 @@ const sql = postgres({
     username: 'postgres',
     password: 'root', // TODO <-- nicht gut
     database: 'loginsystem'
-})
+})  
 
 //TODO kinda unsauber
 if (process.argv[2] == undefined || (port = Number.parseInt(process.argv[2])) == NaN) {
@@ -19,14 +19,20 @@ if (process.argv[2] == undefined || (port = Number.parseInt(process.argv[2])) ==
 
 app.put('/register', (req, res) => {
     if (req.body.name === undefined || req.body.email === undefined || req.body.password === undefined) {
-        res.send("Please provice name, email, password\n")
+        res.status(200).send("Please provice name, email, password\n")
+        res.end()
     }
     bcrypt.hash(req.body.password, 10, async (err, hash) => {
-        console.log(hash.length)
-        //const [new_user] = await sql`INSERT INTO users VALUES (${req.body.email}, ${req.body.name}, ${hash});`
+        try { // TODO probieren ob eine SQL Injection möglich ist
+            await sql`INSERT INTO users VALUES (${req.body.email}, ${req.body.name}, ${hash});`
+            res.status(200).send("Account created succesfully");
+        } catch (e) {
+            if (e.message.includes("duplicate key value violates unique constraint \"users_pkey\"")) res.status(400).send(e.detail + "\n");
+            else if (e.message.includes("connect EHOSTUNREACH")) res.status(500).send("We have trouble connecting to the database\n");
+        } finally {
+            res.end()
+        }
     });
-    console.log(`${req.body.name}, ${req.body.email}, ${req.body.password}`)
-    res.end()
 })
 
 app.post('/login', async (req, res) => {
