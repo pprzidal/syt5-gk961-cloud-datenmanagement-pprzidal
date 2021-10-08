@@ -3,3 +3,7 @@
 # Deployment
 
 # Implementierung
+
+Als erstes hab ich docker-compose installiert.
+
+# Testen

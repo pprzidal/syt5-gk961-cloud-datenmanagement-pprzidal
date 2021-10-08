@@ -18,6 +18,7 @@
   "homepage": "https://github.com/TGM-HIT/syt5-gk961-cloud-datenmanagement-pprzidal#readme",
   "dependencies": {
     "bcrypt": "^5.0.1",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "postgres": "^1.0.2"
   }
 }
