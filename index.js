@@ -19,7 +19,7 @@ if (process.argv[2] == undefined || (port = Number.parseInt(process.argv[2])) ==
 
 app.put('/register', (req, res) => {
     if (req.body.name === undefined || req.body.email === undefined || req.body.password === undefined) {
-        res.status(200).send("Please provice name, email, password\n")
+        res.status(400).send("Please provice name, email, password\n")
         res.end()
     }
     bcrypt.hash(req.body.password, 10, async (err, hash) => {
