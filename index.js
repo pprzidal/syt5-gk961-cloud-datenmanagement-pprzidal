@@ -21,18 +21,20 @@ app.put('/register', (req, res) => {
     if (req.body.name === undefined || req.body.email === undefined || req.body.password === undefined) {
         res.status(400).send("Please provide name, email and password\n")
         res.end()
+    } else {
+        bcrypt.hash(req.body.password, 10, async (err, hash) => {
+            try { // TODO probieren ob eine SQL Injection möglich ist
+                await sql`INSERT INTO users (email, name, password) VALUES (${req.body.email}, ${req.body.name}, ${hash});`
+                res.status(200).send("Account created succesfully");
+            } catch (e) {
+                console.log(e.message)
+                if (e.message.includes("duplicate key value violates unique constraint \"users_email_key\"")) res.status(400).send(e.detail + "\n");
+                else if (e.message.includes("connect EHOSTUNREACH")) res.status(500).send("We have trouble connecting to the database\n");
+            } finally {
+                res.end()
+            }
+        });
     }
-    bcrypt.hash(req.body.password, 10, async (err, hash) => {
-        try { // TODO probieren ob eine SQL Injection möglich ist
-            await sql`INSERT INTO users VALUES (${req.body.email}, ${req.body.name}, ${hash});`
-            res.status(200).send("Account created succesfully");
-        } catch (e) {
-            if (e.message.includes("duplicate key value violates unique constraint \"users_pkey\"")) res.status(400).send(e.detail + "\n");
-            else if (e.message.includes("connect EHOSTUNREACH")) res.status(500).send("We have trouble connecting to the database\n");
-        } finally {
-            res.end()
-        }
-    });
 })
 
 app.post('/login', async (req, res) => {
