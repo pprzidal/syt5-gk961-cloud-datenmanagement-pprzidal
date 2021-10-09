@@ -1,0 +1,21 @@
+version: "3.9"
+
+x-common-variables: &common-variables
+  - POSTGRES_USER=postgres
+  - POSTGRES_PASSWORD=root
+
+services:
+  db:
+    build: ./db
+    environment: *common-variables
+    ports:
+      - "5432:5432"
+  web:
+    build: .
+    environment: *common-variables
+    command: node index.js 4000
+    ports:
+      - "4000:4000"
+    depends_on:
+      - db
+

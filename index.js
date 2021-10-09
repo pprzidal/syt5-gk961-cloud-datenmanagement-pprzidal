@@ -2,12 +2,17 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const postgres = require('postgres')
 
+if (process.env.POSTGRES_USER === undefined || process.env.POSTGRES_PASSWORD === undefined) {
+    console.log("Please provide me with the username and password of the Postgres Database users")
+    process.exit(2)
+}
+
 const app = express();
 app.use(express.urlencoded({extended: true}));
 const sql = postgres({
-    host: '172.17.0.2',
-    username: 'postgres',
-    password: 'root', // TODO <-- nicht gut
+    host: 'db', // <-- das ist ziemlich cool, einfach nur den namen von dem service aus dem docker-compose.yml schreiben.
+    username: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
     database: 'loginsystem'
 })  
 
@@ -25,11 +30,11 @@ app.put('/register', (req, res) => {
         bcrypt.hash(req.body.password, 10, async (err, hash) => {
             try { // TODO probieren ob eine SQL Injection möglich ist
                 await sql`INSERT INTO users (email, name, password) VALUES (${req.body.email}, ${req.body.name}, ${hash});`
-                res.status(200).send("Account created succesfully");
+                res.status(200).send("Account created succesfully\n");
             } catch (e) {
                 console.log(e.message)
                 if (e.message.includes("duplicate key value violates unique constraint \"users_email_key\"")) res.status(400).send(e.detail + "\n");
-                else if (e.message.includes("connect EHOSTUNREACH")) res.status(500).send("We have trouble connecting to the database\n");
+                else if (e.message.includes("connect EHOSTUNREACH") || e.message.includes("connect ETIMEDOUT")) res.status(500).send("We have trouble connecting to the database\n");
             } finally {
                 res.end()
             }
@@ -55,5 +60,5 @@ app.post('/login', async (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log(`Login system listening on http://localhost:${port}`)
+    console.log(`Login system listening on http://localhost:${port}\n`)
 })

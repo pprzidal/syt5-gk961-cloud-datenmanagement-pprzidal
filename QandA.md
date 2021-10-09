@@ -16,4 +16,6 @@ Eine Relationale bzw. eine dokumentorientierte wie z.b. MongoDB
 
 ## Verschiedene Frameworks bieten schnelle Umsetzungsmöglichkeiten, welche Eckpunkte müssen jedoch bei einer öffentlichen Bereitstellung (Production) von solchen Services beachtet werden?
 
-Wenn es um Authentifizierung geht wäre es wichtig das die Kommunikation verschlüsselt ist. 
+* Wenn es um Authentifizierung geht wäre es wichtig das die Kommunikation verschlüsselt ist (HTTPS).
+* Außerdem sind SQL Injections zu verhindern.
+* Weiters sind Passwörter immer als Hash oder Salted Hash zu speichern.
