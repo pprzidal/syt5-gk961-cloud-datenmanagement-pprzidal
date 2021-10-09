@@ -19,7 +19,7 @@ if (process.argv[2] == undefined || (port = Number.parseInt(process.argv[2])) ==
 
 app.put('/register', (req, res) => {
     if (req.body.name === undefined || req.body.email === undefined || req.body.password === undefined) {
-        res.status(400).send("Please provice name, email, password\n")
+        res.status(400).send("Please provide name, email and password\n")
         res.end()
     }
     bcrypt.hash(req.body.password, 10, async (err, hash) => {
@@ -36,7 +36,20 @@ app.put('/register', (req, res) => {
 })
 
 app.post('/login', async (req, res) => {
-    
+    if (req.body.email === undefined || req.body.password === undefined) {
+        res.status(400).send("Please provide email and password\n")
+        res.end()
+    }
+    try {
+        const user = await sql`SELECT password, name FROM users WHERE email = ${req.body.email};`
+        if (user.length == 0) res.status(400).send("User doesnt exist\n")
+        else if (await bcrypt.compare(req.body.password, user[0].password)) res.status(200).send(`Welcome ${user[0].name}\n`)
+        else res.status(400).send("Wrong password\n")
+    } catch (e) {
+        if (e.message.includes("connect EHOSTUNREACH")) res.status(500).send("We have trouble connecting to the database\n");
+    } finally {
+        res.end()
+    }
 })
 
 app.listen(port, () => {
