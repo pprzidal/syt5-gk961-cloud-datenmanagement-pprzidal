@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"
   web:
-    build: .
+    build: ./src
     environment: *common-variables
     command: node index.js 4000
     ports:
