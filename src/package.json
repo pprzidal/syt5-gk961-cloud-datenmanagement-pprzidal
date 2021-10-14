@@ -4,7 +4,8 @@
   "description": "Simple registration and login system",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "index": "sudo node index.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,9 @@
   "dependencies": {
     "bcrypt": "^5.0.1",
     "express": "^4.17.1",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "https": "^1.0.0",
     "postgres": "^1.0.2"
   }
 }

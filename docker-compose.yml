@@ -13,9 +13,9 @@ services:
   web:
     build: ./src
     environment: *common-variables
-    command: node index.js 4000
+    command: node index.js
     ports:
-      - "4000:4000"
+      - "8080:8080"
+      - "8443:8443"
     depends_on:
       - db
-
