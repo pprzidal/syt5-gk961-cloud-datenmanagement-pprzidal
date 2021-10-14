@@ -18,17 +18,20 @@ const sql = postgres({
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: 'loginsystem'
-})  
-
-//TODO kinda unsauber
-/*if (process.argv[2] == undefined || (port = Number.parseInt(process.argv[2])) == NaN) {
-    console.log("Provide a port for the app to run on\nLike \"nodejs index.js 4000\" for example");
-    process.exit(1);
-}*/
+})
 
 app.put('/register', (req, res) => {
+    // quelle: https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript
+    function validateEmail(email) {
+        const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
+
     if (req.body.name === undefined || req.body.email === undefined || req.body.password === undefined) {
         res.status(400).send("Please provide name, email and password\n")
+        res.end()
+    } else if(!validateEmail(req.body.email)) {
+        res.status(400).send("Please provide a valid email\n")
         res.end()
     } else {
         // Hier wird ein gesalzen und gehashed
