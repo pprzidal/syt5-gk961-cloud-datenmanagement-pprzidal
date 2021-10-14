@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const postgres = require('postgres')
+const postgres = require('postgres');
+const saltOrRounds = 10;
 
 if (process.env.POSTGRES_USER === undefined || process.env.POSTGRES_PASSWORD === undefined) {
     console.log("Please provide me with the username and password of the Postgres Database users")
@@ -27,7 +28,7 @@ app.put('/register', (req, res) => {
         res.status(400).send("Please provide name, email and password\n")
         res.end()
     } else {
-        bcrypt.hash(req.body.password, 10, async (err, hash) => {
+        bcrypt.hash(req.body.password, saltOrRounds, async (err, hash) => {
             try { // TODO probieren ob eine SQL Injection möglich ist
                 await sql`INSERT INTO users (email, name, password) VALUES (${req.body.email}, ${req.body.name}, ${hash});`
                 res.status(200).send("Account created succesfully\n");
