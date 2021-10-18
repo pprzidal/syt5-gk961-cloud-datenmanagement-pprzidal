@@ -4,6 +4,8 @@ Die Fragen sind im [QandA](QandA.md) beantwortet.
 
 # Deployment
 
+## "On Premises"
+
 Git repo clonen. Dann:
 
 ```
@@ -11,6 +13,65 @@ docker-compose up --build
 ```
 
 Und dann sollte auf port 8080 bzw. 8443 am Loopback Adapter die REST Schnittstelle verfügbar sein.
+
+## heroku
+
+Ist deployed auf [blooming-eyrie-22048.herokuapp.com](https://blooming-eyrie-22048.herokuapp.com/).
+
+Als erstes hab ich mir einen heroku account erstellt. Wobei man hierzu keine Kreditkarte benötigt was heroku von AWS unterscheidet.
+
+Dann hab ich heroku cli installiert. Das hab ich wie folgt gemacht:
+
+```bash
+sudo curl https://cli-assets.heroku.com/install.sh | sh
+```
+
+Danach hab ich mit ``heroku login -i`` in der CLI in heroku eingeloggt wobei man dann alle Commands ausführen kann. [8]
+
+Nun bin ich in den Ordner gegangen in dem das Projekt ist (``cd ~/Projects/Schule/syt5_gk961_cloud_datenmanagement``). Wobei dieser Ordner schon ein git repo (also einen .git Ordner hat).
+
+Um nun eine neue heroku app zu erstellen hab ich ``heroku create`` eingegeben. Wobei dieser heroku app dann ein zufälliger Name zugeordnet wird in meinem fall war das ``blooming-eyrie-22048`` um jetzt aber einen eigenen Namen zu verwenden hätte man ``heroku create namederapp`` eingeben müssen bzw. ``heroku apps:create namederapp``. [9]
+
+Dieser Command added dann einen neuen remote zum git repo. Davon kann man sich mit ``git remote -v`` überzeugen:
+
+![neuerupstream](./pics/numer10.png)
+
+Als ich nun ``git push heroku main`` eingegeben habe hab ich gesehen das heroku nicht automatisch herausgefunden hat um welche Sprache es sich handelt.
+
+Der Grund dafür ist recht simpel. heroku sucht im root folder des Projektes nach anzeichen um welche Sprache es sich handeln könnte. Wenn mein package.json bzw. package-lock.json jetzt aber in einem sub directory sind kann heroku nicht die Sprache erkennen und bricht das builden ab. Die Lösung dafür ist recht einfach:
+
+Man moved einfach die zwei package.json files in den root folder des projekts:
+
+```bash
+mv ./src/package* ./
+```
+
+Man kann übrigens auch das buildpack manuell setzen was so gehen würde:
+
+```bash
+heroku buildpacks:set heroku/nodejs
+```
+
+Eine Übersicht über alle Buildpacks die offiziell von heroku supported werden findet man in Quelle 10. [10]
+
+Nun habe ich allerdings einen neuen branch gemacht auf dem ich die app so verändere das sie heroku ready ist.
+
+```bash
+git branch herokubranch
+git checkout herokubranch
+```
+
+Nun hab ich die änderungen mit ``git add *`` zur stageing area geadded und mit ``git commit`` commited. Als ich aber nun versucht habe mit ``git push heroku herokubranch`` habe ich gesehen dass das nicht funktioniert. Der Grund dafür ist recht einfach heroku deployed nur sachen die auf den Branch heroku/main kommen. Ich habe es aber auf heroku/herokubranch gepusht.
+
+Also habe ich nach einer möglichkeit gesucht mit der ich einen lokalen branch der nicht main ist auf heroku/main zu pushen und bin bei [11] fündig geworden.
+
+Der Befehl lautet also ``git push heroku herokubranch:main``.
+
+Nun benötigt meine App allerdings noch einen Datastore um zu funktionieren. Diesen kann man auch von heroku bekommen. Da heroku das sgn. postgres addon anbietet was im endeffekt eine DBaaS ist. ``heroku addons:create heroku-postgresql:hobby-dev`` ist der command um eine postgres db zu bekommen. Man kann dann verifizieren dass das geklappt hat mit ``heroku addons``.
+
+Um jetzt aber die db im Code verwenden zu können muss ich noch username password dbname usw.. wissen. Diese infos kann man sich mit ``heroku pg:credentials:url`` holen. Man sieht das der Connection String folgendes format hat: ``postgres://username:password@host:port/database``. Was mir die möglichkeit gibt diesen eins zu eins als connection string für den postgres client zu verwenden. [12]
+
+TODO connection string format, ssl problem, billing (450 free dyno hours, sleeping, usw..)
 
 # Implementierung
 
@@ -126,7 +187,7 @@ curl -X POST http://localhost:4000/login -d "email=mborko@tgm.ac.at&password=123
 
 ![d](./pics/numer7.png)
 
-## Passwort wird plaintext übertragen! Sicherungsmöglichkeit?
+# Passwort wird plaintext übertragen! Sicherungsmöglichkeit?
 
 Das steht zwar eigentlich nicht in der Angabe aber ok.
 
@@ -220,6 +281,23 @@ curl -k -X POST https://localhost:8443/login -d "email=pprzidal@student.tgm.ac.a
 
 Merkt man das der filter den wir für den tcpdump definiert haben nicht mehr nur 20 sondern sogar 36 Packete abfängt. Wobei der Inhalt der Packete nicht mehr im plaintext ist.
 
+# email check fehlt / Regexp?
+
+Die email beim registieren zu validieren wäre tatsächlich eine gute Idee. Da das aber schon ein gelöstes Problem ist kann man einfach nach einer Lösung online suchen. [7]
+
+```js
+function validateEmail(email) {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
+```
+
+Diese function gibt true zurück falls es sich um eine valide email handelt und false andernfalls.
+
+## Testen
+
+![bild](./pics/numer9.png)
+
 # Quellen
 
 [1]     "man curl";[kein Link]();10.10.2021
@@ -233,3 +311,13 @@ Merkt man das der filter den wir für den tcpdump definiert haben nicht mehr nur
 [5]     "docker compose";[Link](https://docs.docker.com/samples/django/);10.10.2021
 
 [6]     "https with nodejs & express stackoverflow";[Link](https://stackoverflow.com/questions/11744975/enabling-https-on-express-js); 14.10.2021
+
+[7]     "js validate email";[Link](https://stackoverflow.com/questions/46155/how-to-validate-an-email-address-in-javascript); 18.10.2021
+
+[8]     "heroku cli";[Link](https://devcenter.heroku.com/articles/heroku-cli);18.10.2021
+
+[9]     "heroku create";[Link](https://devcenter.heroku.com/articles/creating-apps);18.10.2021
+
+[10]    "heroku buildpacks";[Link](https://devcenter.heroku.com/articles/buildpacks);18.10.2021
+
+[11]    "Make Heroku run non-master Git branch stackoverflow";[Link](https://stackoverflow.com/questions/14593538/make-heroku-run-non-master-git-branch); 18.10.2021
